@@ -1,0 +1,202 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<script src="~/libs/highcharts/highcharts.js"></script>
+<link href="~/libs/highcharts/highcharts.css" rel="stylesheet" />
+<script src="~/libs/highcharts/highcharts-more.js"></script>
+
+
+<div class="container">
+    <div class="row" >
+        <div class="col-md-12">
+            <div id="container" style="min-width: 100%; height: 500px; padding: 20px"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <h4>
+                Sensor 1:<br />
+                @(defuzzify.s1Result())
+            </h4>
+        </div>
+
+
+        <div class="col-md-4">
+            <h4>
+                Sensor 2:<br />
+                @(defuzzify.s2Result())
+            </h4>
+        </div>
+
+
+        <div class="col-md-4">
+            <h4>
+                Sensor 3:<br />
+                @(defuzzify.s3Result())
+            </h4>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    Highcharts.chart('container', {
+        plotOptions: {
+            bubble: {
+                // minSize:100,
+                //maxSize:200,
+                minSize: '0%',
+                maxSize: '2%'
+            }
+        },
+        chart: {
+            type: 'bubble',
+            plotBorderWidth: 1,
+            zoomType: 'xy',
+
+        },
+        credits: {
+            enabled: false
+        },
+
+        title: {
+            text: 'Sensor Readings'
+        },
+
+        xAxis: {
+            gridLineWidth: 1,
+            labels: { enabled: false }
+        },
+
+        yAxis: {
+            startOnTick: false,
+            endOnTick: false
+        },
+        legend: {
+            enabled: false,
+            align: 'right',
+            verticalAlign: 'middle'
+        },
+
+
+        series: [
+
+            //start seismic sesnsors
+            {
+                //showInLegend: false,
+                data: [
+                     @(defuzzify.LoadSensorGraphData("ss0", 1, 4))
+                    ],
+                color: "black",
+                name: "seismic Sensor0",
+                marker: {
+                    maxSize: "11px",
+                    fillColor: {
+                        radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                        stops: [
+                            [0, 'rgba(255,255,255,0.5)'],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.5).get('rgba')]
+                        ]
+                    }
+                }
+            }, {
+                data: [
+
+                     @(defuzzify.LoadSensorGraphData("ss1", 5, 8))
+                    ],
+                color: "black",
+                name: "seismic Sensor1",
+                marker: {
+                    fillColor: {
+                        radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                        stops: [
+                            [0, 'rgba(255,255,255,0.5)'],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.5).get('rgba')]
+                        ]
+                    }
+                }
+            }, {
+                data: [
+                     @(defuzzify.LoadSensorGraphData("ss2", 9, 12))
+                    ],
+                color: "black",
+                name: "seismic Sensor2",
+                marker: {
+                    fillColor: {
+                        radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                        stops: [
+                            [0, 'rgba(255,255,255,0.5)'],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.5).get('rgba')]
+                        ]
+                    }
+                }
+            }
+            //end seismic sensors
+
+
+            ,
+
+            //start proximity sesnsors
+            {
+                //showInLegend: false,
+                data: [
+                     @(defuzzify.LoadSensorGraphData("sp0", 1, 4))
+                    ],
+                color: "red",
+                name: "Pressure Sensor0",
+                marker: {
+                    maxSize: "11px",
+                    fillColor: {
+                        radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                        stops: [
+                            [0, 'rgba(255,255,255,0.5)'],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.5).get('rgba')]
+                        ]
+                    }
+                }
+            }, {
+                data: [
+
+                     @(defuzzify.LoadSensorGraphData("sp1", 5, 8))
+                    ],
+                color: "red",
+                name: "Pressure Sensor1",
+                marker: {
+                    fillColor: {
+                        radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                        stops: [
+                            [0, 'rgba(255,255,255,0.5)'],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.5).get('rgba')]
+                        ]
+                    }
+                }
+            }, {
+                data: [
+                     @(defuzzify.LoadSensorGraphData("sp2", 9, 12))
+                    ],
+                color: "red",
+                name: "Pressure Sensor2",
+                marker: {
+                    fillColor: {
+                        radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                        stops: [
+                            [0, 'rgba(255,255,255,0.5)'],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.5).get('rgba')]
+                        ]
+                    }
+                }
+            }
+            //end proximity sensors
+
+
+        ]
+
+    });
+</script>
+
+
+
+

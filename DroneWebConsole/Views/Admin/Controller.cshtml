@@ -1,0 +1,388 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+@*imgviewer library requires leaflet dependadancy*@
+<script src="~/libs/leaflet/leaflet.js"></script>
+<link href="~/libs/leaflet/leaflet.css" rel="stylesheet" />
+<script src="~/libs/imagviewer/jquery-1.12.4.min.js"></script>
+<script src="~/libs/imagviewer/jquery-ui.min.js"></script>
+<link href="~/libs/imagviewer/imgViewer2.min.css" rel="stylesheet" />
+<script src="~/libs/imagviewer/imgViewer2.min.js"></script>
+@*notifications*@
+<script src="~/assets/js/notify.js"></script>
+@*jquery_loader*@
+<link href="~/libs/jquery_loader/jquery.loading.css" rel="stylesheet" />
+<script src="~/libs/jquery_loader/jquery.loading.js"></script>
+
+
+<style>
+    /*row*/
+    .rpage {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        height: 45vh !important;
+    }
+    /*column*/
+    .cpage {
+        display: flex;
+        flex-direction: column;
+        flex-basis: 100%;
+        flex: 1;
+    }
+
+    .imgwrap {
+        width: 50%; /*or whatever you choose*/
+        margin: auto;
+    }
+
+        .imgwrap img {
+            display: block;
+            width: 100%;
+            max-width: 500px; /*actual image width*/
+            height: auto; /* maintain aspect ratio*/
+            margin: auto; /*optional centering of image*/
+        }
+
+    #img_snap {
+        display: block;
+        width: 100%;
+        height: 100%; /* maintain aspect ratio*/
+        margin: auto; /*optional centering of image*/
+    }
+
+
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+
+<div id="app">
+    <div class='rpage'>
+        <div class='cpage' style="background:white;">
+
+            <div class="imgwrap">
+                <img v-bind:src="img_src" id="hassan_" />
+            </div>
+
+
+
+        </div>
+        <div class='cpage' style="border:solid 1px #fff;">
+            <div class='green-column'>
+
+                <table class="table table-striped" style="font-size:9px!important;" id="myTable">
+                    <thead>
+                        <tr>
+                            <th scope="col">Time</th>
+                            <th scope="col">Command</th>
+                            <th scope="col">Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="c in commands">
+                            <td>{{ c.time }}</td>
+                            <td>{{ c.command }} </td>
+                            <td>{{ c.response }} </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <template>
+                    <mdb-datatable :data="commands"
+                                   striped
+                                   bordered />
+                </template>
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+    <div class='rpage'>
+        <div class='cpage' style="border:solid 1px #fff;">
+            <div class='' style="height:100%;">
+                <div id="map"></div>
+            </div>
+        </div>
+        <div class='cpage'>
+            <br />
+            <br />
+            <div style="height:100%">
+                <center>
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="input-group">
+                                    <select id="sDrone" class="form-control" style="width:200px">
+                                        <option value="Drone_1">Drone_1</option>
+                                    </select>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="basic-addon2">Select Drone</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <br />
+                    <br />
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button class="btn btn-success" v-on:click="execCommand('snap_pic');">snap pic</button>
+                                   @* <button class="btn btn-warning" v-on:click="execCommand('start_video');">start video</button>
+                                    <button class="btn btn-primary" v-on:click="execCommand('stop_video');">stop video</button>*@
+                                    <button class="btn btn-info" v-on:click="execCommand('func_home_drone');">home drone</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br />
+                        <br />
+                        <br />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button class="btn btn-success" v-on:click="execCommand('func_reboot_vehicle');">reboot vehicle</button>
+                                    <button class="btn btn-warning" v-on:click="execCommand('func_arm_and_takeoff');">Arm Drone</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </center>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var vm_ = new Vue({
+        el: '#app',
+        data: {
+            commands: [],
+            autopilot: "off",
+            img_src:"/assets/img/img_camera.gif",
+
+        },//data
+        methods: {
+
+            //display the image snapped from the drone
+            display_drone_captured_image(img_url) {
+                this.img_src = img_url;
+            },
+            //only show the last four commands
+            //function will send commmands to the drone via the server
+            execCommand(cmd) {
+                var vm = this;
+                if (cmd === "snap_pic") {
+                    $("#imgwrap").loading({
+                        stoppable: true,
+                    });
+                }
+
+                if (vm.autopilot == "on") {
+                    $.notify("auto pilot is on");
+                    return;//dont exec commands as long as auto pilot is on
+                }
+                if (cmd == "chk") {
+                    cmd = $("#auto_pilot").val();
+                }
+                var sdrone = $("#sDrone").val();
+                $.ajax({
+                    url: "/Admin/execCommand",
+                    data: { drone: sdrone, command: cmd },
+                    type: "post",
+                    success: function (data) {
+                        $.notify(cmd, "success");
+                        vm.commands.unshift(data);
+                        if (vm.commands.length >= 7) vm.commands.pop();
+                    },
+                    error: function () {
+                        $.notify("Error occurred", "error");
+                    },
+                });
+            },//execCommand
+
+
+
+
+        },//methods
+
+    });
+</script>
+
+
+<script>
+    //$("#hassan").imgViewer2();
+</script>
+
+
+<script>
+    //google maps
+    var map;
+    //since we only have one drone this is the universal location
+    //update the location via the mqtt push
+    var drone_1_latitude = 0;
+    var drone_1_longitude = 0;
+    var drone_1_marker;
+
+
+    //attempt to get my own location
+    function getMyLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else { }
+    }
+
+    //navigator callback
+    function showPosition(position) {
+        drone_1_latitude = position.coords.latitude;
+        drone_1_longitude = position.coords.longitude;
+        //send the map to this location
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: drone_1_latitude, lng: drone_1_longitude },
+            zoom: 13,
+            mapTypeId: 'hybrid',
+            heading: 90,
+            tilt: 90
+        });
+
+
+        //add the drone marker
+        drone_1_marker = new google.maps.Marker({
+            position: { lat: drone_1_latitude, lng: drone_1_longitude },
+            map: map,
+            title: 'Drone_1_location'
+        });
+    }
+
+    //init the map in the mean while
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 6.465422, lng: 3.406448 },
+            zoom: 13,
+            mapTypeId: 'hybrid',
+            heading: 90,
+            tilt: 90
+        });
+
+
+        //attempt to set location to my own location
+        //and execute callback to set my currect position
+        getMyLocation();
+
+        var laLatLng = new google.maps.LatLng(drone_1_latitude, drone_1_longitude);
+
+        //add the drone marker
+        drone_1_marker = new google.maps.Marker({
+            position: { lat: drone_1_latitude, lng: drone_1_longitude },
+            map: map,
+            title: 'Drone_1_location <br/>Lat: ' + drone_1_latitude + "<br/>Lng: " + drone_1_longitude
+        });
+
+    }
+
+
+
+    //move the map to
+    function panTo(latitude, longitude) {
+        var laLatLng = new google.maps.LatLng(latitude, longitude);
+        map.panTo(laLatLng);
+        map.setZoom(13);
+    }
+
+    //find drone 1 on the map
+    function panToDrone_1() {
+        if (drone_1_latitude === 0) return;//dont execute when no data is available
+        var laLatLng = new google.maps.LatLng(drone_1_latitude, drone_1_longitude);
+        map.panTo(laLatLng);
+        map.setZoom(13);
+    }
+
+
+    //function to move the drone_map marker
+    function move_drone_marker() {
+
+        drone_1_marker.setPosition(new google.maps.LatLng(drone_1_latitude, drone_1_longitude));
+        map.panTo(new google.maps.LatLng(0, 0));
+
+    };
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhyGJxLO2Xj_Z07lzpLfdNly63LDewMeM&callback=initMap"
+        async defer></script>
+
+<script>
+    //init mqtt
+    var hostname = "192.168.138.1";
+    var port = 1884;//this port is for the websocket
+    var clientId = "webio4mqttexample" + Date.now();//this is done to mke the connection unique
+    var subscription = "drone_web_console_server";
+
+    mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+    mqttClient.onMessageArrived = MessageArrived;
+    mqttClient.onConnectionLost = ConnectionLost;
+    Connect();
+
+    /*Initiates a connection to the MQTT broker*/
+    function Connect() {
+        mqttClient.connect({
+            onSuccess: Connected,
+            onFailure: ConnectionFailed,
+            keepAliveInterval: 10,
+            useSSL: false,
+        });
+    }
+
+    /*Callback for successful MQTT connection */
+    function Connected() {
+        console.log("MQtt Controller Connected");
+        mqttClient.subscribe(subscription);
+    }
+
+    /*Callback for failed connection*/
+    function ConnectionFailed(res) {
+        console.log("MQtt Controller Connect failed:" + res.errorMessage);
+    }
+
+    /*Callback for lost connection*/
+    function ConnectionLost(res) {
+        if (res.errorCode !== 0) {
+            console.log("MQtt Controller Connection lost:" + res.errorMessage);
+            Connect();
+        }
+    }
+
+    /*Callback for incoming message processing */
+    function MessageArrived(message) {
+        var data = message.payloadString;
+        var json = JSON.parse(data);
+        if (json.type === "drone_location_update") {
+            //update the location of the drone based on the updates of the geo coordinates
+            //and move the map to track the drone location
+            drone_1_latitude = json.drone_1_latitude;//set the coordinates
+            drone_1_longitude = json.drone_1_longitude;//set the coordinates of the drone
+            move_drone_marker();//move the map to trace the drone location
+        }
+        if (json.type === "drone_image_snap") {
+            vm_.img_src = json.img_url;//set the image here its reactive already
+            //$("#hassan").imgViewer2();
+        }
+    }
+
+
+
+
+</script>
+
+
+

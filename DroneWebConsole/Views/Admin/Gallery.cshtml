@@ -1,0 +1,71 @@
+﻿@{Layout = "_Layout";}
+@{var items = (IPagedList<mGalleryItem>)ViewBag.items;}
+
+@using PagedList.Core;
+@using PagedList;
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, PagedList.Core.Mvc
+
+<link href="~/assets/css/imageHover.css" rel="stylesheet" />
+<link href="~/assets/css/pagination.css" rel="stylesheet" />
+<div class="container." style="padding:20px;background:#ccc1b7;">
+
+    <div class="row">
+        <div class="col-md-12">
+            <form action="/Admin/Gallery" method="get" class="form-inline">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="search" name="search" placeholder="search place or gallery" value="@ViewBag.search">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-success">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="row">
+        @foreach (var p in items)
+        {
+            <div class="col-md-3">
+                <div class="divImageHolder">
+                    <a href="#">
+                        <div class="divImageItem firstProduct">
+                            @if (items.Count > 0)
+                            {
+                                <img src="@p.url" style="object-fit:cover" class="bshadow" />
+                            }
+                            else
+                            {
+                                <img src="~/account/assets/img/placeholder_property.png" style="object-fit:cover" class="bshadow" />
+                            }
+                            <span class="text-content">
+                                <span>
+                                   
+                                </span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-12">
+            <pager class="pager-container"
+                   list="@items"
+                   options="@PagedList.Core.Mvc.PagedListRenderOptions.PageNumbersOnly"
+                   asp-action="Gallery"
+                   asp-controller="Admin"
+                   asp-route-keyword="" />
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewBag.title</title>
+    @*jquery.js*@
+    <script src="~/assets/js/jquery.min.js"></script>
+    @*bs.js*@
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    @*cyborge css theme*@
+    <link href="~/assets/css/cyborge.bootstrap.min.css" rel="stylesheet" />
+    @*myStyle css*@
+    <link href="~/assets/css/myStyle.css" rel="stylesheet" />
+    @*jquery-confirm*@
+    <link href="~/libs/jquery_alerts/jquery-confirm.min.css" rel="stylesheet" />
+    <script src="~/libs/jquery_alerts/jquery-confirm.min.js"></script>
+    @*vue*@
+    <script src="~/assets/js/vue.min.js"></script>
+    @*swith-button*@
+    <link href="~/assets/css/switch_button.css" rel="stylesheet" />
+    @*font-awesome*@
+    <link href="~/libs/fontawesome-free-5.9.0-web/css/all.css" rel="stylesheet" />
+    @*mqtt*@
+    <script src="~/assets/js/mqttws31.min.js"></script>
+
+</head>
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Admin</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarColor02">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item @(ViewBag.title=="Dashboard"?"active":"")">
+                    <a class="nav-link" href="/Admin/Dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item @(ViewBag.title=="Gallery"?"active":"")">
+                    <a class="nav-link" href="/Admin/Gallery">Gallery</a>
+                </li>
+                <li class="nav-item @(ViewBag.title=="Controller"?"active":"")">
+                    <a class="nav-link" href="/Admin/Controller">Controller</a>
+                </li>
+                <li class="nav-item @(ViewBag.title=="Analytics"?"active":"")">
+                    <a class="nav-link" href="/Admin/Analytics">Analytics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Admin/Logout">Logout</a>
+                </li>
+            </ul>
+            @if (ViewBag.title == "Dashboard")
+            {
+            <form class="form-inline my-2 my-lg-0">
+                <div class="input-group">
+                    <select class="form-control" style="width:200px;">
+                        <option value="Drone_1">Drone_1</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-primary my-2 my-sm-0" type="button" onclick="panToDrone_1();">
+                            <i class="fa fa-search"></i>
+                            Find Drone
+                        </button>
+                    </div>
+                </div>
+            </form>
+            }
+        </div>
+    </nav>
+
+
+
+    <div>
+        @RenderBody()
+    </div>
+</body>
+</html>

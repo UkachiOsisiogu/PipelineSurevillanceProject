@@ -1,0 +1,219 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<script src="~/libs/highcharts/highcharts.js"></script>
+<link href="~/libs/highcharts/highcharts.css" rel="stylesheet" />
+<script src="~/libs/highcharts/highcharts-more.js"></script>
+
+<script src="~/libs/high_stock/highstock.js"></script>
+<script src="~/libs/high_stock/exporting.js"></script>
+<script src="~/libs/high_stock/export-data.js"></script>
+
+<script src="~/assets/js/mqttws31.min.js"></script>
+<script src="~/assets/js/webio_mqtt.js"></script>
+
+<div class="container" id="app">
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="graph_box">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h4>
+                            Site 1:<br />
+                        </h4>
+                        <h6>
+                            Location: -17.3200 40.9325
+                        </h6>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div id="sensor_1_pressure"></div>
+                    </div>
+
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+
+<script>
+    var series1;
+    var series2;
+    Highcharts.chart('sensor_1_pressure', {
+        chart: {
+            type: 'spline',
+            animation: Highcharts.svg, // don't animate in old IE
+            marginRight: 10,
+            events: {
+                load: function () {
+
+                    // set up the updating of the chart each second
+                    series1 = this.series[0];
+                    series2 = this.series[1];
+
+                }
+            }
+        },
+
+        time: {
+            useUTC: false
+        },
+
+        title: {
+            text: 'Live Sensor Data'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickPixelInterval: 150
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br/>',
+            pointFormat: '{point.x:%Y-%m-%d %H:%M:%S}<br/>{point.y:.2f}'
+        },
+        legend: {
+            enabled: false
+        },
+        exporting: {
+            enabled: false
+        },
+        series: [
+
+            {
+                name: 'Pressure reading',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -25; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: 0//Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            },
+
+            {
+                dashStyle: 'longdash',
+                name: 'Seismic',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -25; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: 0//Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            },
+
+
+        ]
+    });
+</script>
+
+
+
+
+<script>
+    //init mqtt
+    var hostname = "192.168.138.1";
+    var port = 1884;//this port is for the websocket
+    var clientId = "webio4mqttexample" + Date.now();//this is done to mke the connection unique
+    var subscription = "drone_web_console_server";
+
+    mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+    mqttClient.onMessageArrived = MessageArrived;
+    mqttClient.onConnectionLost = ConnectionLost;
+    Connect();
+
+    /*Initiates a connection to the MQTT broker*/
+    function Connect() {
+        mqttClient.connect({
+            onSuccess: Connected,
+            onFailure: ConnectionFailed,
+            keepAliveInterval: 10,
+            useSSL: false,
+        });
+    }
+
+    /*Callback for successful MQTT connection */
+    function Connected() {
+        console.log("MQtt Controller Connected");
+        mqttClient.subscribe(subscription);
+    }
+
+    /*Callback for failed connection*/
+    function ConnectionFailed(res) {
+        console.log("MQtt Controller Connect failed:" + res.errorMessage);
+    }
+
+    /*Callback for lost connection*/
+    function ConnectionLost(res) {
+        if (res.errorCode !== 0) {
+            console.log("MQtt Controller Connection lost:" + res.errorMessage);
+            Connect();
+        }
+    }
+
+    /*Callback for incoming message processing */
+    function MessageArrived(message) {
+        var data = message.payloadString;
+        var json = JSON.parse(data);
+        if (json.type === "pressure_sensor_reading") {
+            add_pressure_data_point(json.value);
+            add_seismic_data_point(Math.random());
+        }
+
+        if (json.type === "seismic_sensor_reading") {
+            add_seismic_data_point(Math.random());
+        }
+
+    }
+
+
+    //add data point to the
+    function add_pressure_data_point(pressure_reading) {
+        var x = (new Date()).getTime(), // current time
+            y = pressure_reading;//Math.random();
+        series1.addPoint([x, y], true, true);
+    }
+
+    //add data point to the
+    function add_seismic_data_point(seismic_reading) {
+        var x = (new Date()).getTime(), // current time
+            y = seismic_reading*10;//Math.random();
+        series2.addPoint([x, y], true, true);
+    }
+
+
+
+
+</script>

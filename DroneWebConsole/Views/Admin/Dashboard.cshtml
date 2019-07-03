@@ -1,0 +1,175 @@
+﻿@{ Layout = "_Layout";}
+
+
+<style>
+    #map, #mp {
+        height: 90vh !important;
+        width: 100% !important;
+    }
+</style>
+
+
+<div class="row." id="mp">
+    <div class="col-md-12.">
+        <div id="map">
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var map;
+    //since we only have one drone this is the universal location
+    //update the location via the mqtt push
+    var drone_1_latitude = 0;
+    var drone_1_longitude = 0;
+    var drone_1_marker;
+
+
+    //attempt to get my own location
+    function getMyLocation()
+    {
+        if (navigator.geolocation)
+        {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {}
+    }
+
+    //navigator callback
+    function showPosition(position)
+    {
+        drone_1_latitude  = position.coords.latitude;
+        drone_1_longitude = position.coords.longitude;
+        //send the map to this location
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: drone_1_latitude, lng: drone_1_longitude },
+            zoom: 13,
+            mapTypeId: 'hybrid',
+            heading: 90,
+            tilt: 90
+        });
+
+
+        //add the drone marker
+        drone_1_marker = new google.maps.Marker({
+            position: { lat: drone_1_latitude, lng: drone_1_longitude },
+            map: map,
+            title: 'Drone_1_location'
+        });
+    }
+
+    //init the map in the mean while
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 6.465422, lng: 3.406448 },
+            zoom: 13,
+            mapTypeId: 'hybrid',
+            heading: 90,
+            tilt: 90
+        });
+
+
+        //attempt to set location to my own location
+        //and execute callback to set my currect position
+        getMyLocation();
+
+        var laLatLng = new google.maps.LatLng(drone_1_latitude, drone_1_longitude);
+
+        //add the drone marker
+        drone_1_marker = new google.maps.Marker({
+            position: { lat: drone_1_latitude, lng: drone_1_longitude},
+            map: map,
+            title: 'Drone_1_location <br/>Lat: ' + drone_1_latitude + "<br/>Lng: " + drone_1_longitude
+        });
+
+    }
+
+   
+
+    //move the map to
+    function panTo(latitude, longitude) {
+        var laLatLng = new google.maps.LatLng(latitude, longitude);
+        map.panTo(laLatLng);
+        map.setZoom(13);
+    }
+
+    //find drone 1 on the map
+    function panToDrone_1() {
+        if (drone_1_latitude === 0) return;//dont execute when no data is available
+        var laLatLng = new google.maps.LatLng(drone_1_latitude, drone_1_longitude);
+        map.panTo(laLatLng);
+        map.setZoom(13);
+    }
+
+
+    //function to move the drone_map marker
+    function move_drone_marker() {
+
+        drone_1_marker.setPosition(new google.maps.LatLng(drone_1_latitude, drone_1_longitude));
+        map.panTo(new google.maps.LatLng(0, 0));
+
+    };
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhyGJxLO2Xj_Z07lzpLfdNly63LDewMeM&callback=initMap"
+        async defer></script>
+
+<script>
+    //init mqtt
+    var hostname     = "localhost";
+    var port         = 1884;//this port is for the websocket
+    var clientId     = "webio4mqttexample" + Date.now();//this is done to mke the connection unique
+    var subscription = "drone_web_console_server";
+
+    mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+    mqttClient.onMessageArrived = MessageArrived;
+    mqttClient.onConnectionLost = ConnectionLost;
+    Connect();
+
+    /*Initiates a connection to the MQTT broker*/
+    function Connect() {
+        mqttClient.connect({
+            onSuccess: Connected,
+            onFailure: ConnectionFailed,
+            keepAliveInterval: 10,
+            useSSL: false,
+        });
+    }
+
+    /*Callback for successful MQTT connection */
+    function Connected() {
+        console.log("MQtt Dashboard Connected");
+        mqttClient.subscribe(subscription);
+    }
+
+    /*Callback for failed connection*/
+    function ConnectionFailed(res) {
+        console.log("MQtt Dashboard Connect failed:" + res.errorMessage);
+    }
+
+    /*Callback for lost connection*/
+    function ConnectionLost(res) {
+        if (res.errorCode !== 0) {
+            console.log("MQtt Dashboard Connection lost:" + res.errorMessage);
+            Connect();
+        }
+    }
+
+    /*Callback for incoming message processing */
+    function MessageArrived(message) {
+        var data = message.payloadString;
+        var json = JSON.parse(data);
+        if (json.type === "drone_location_update") {
+            //update the location of the drone based on the updates of the geo coordinates
+            //but dont move the drone, that will be done when the button is clicked
+            drone_1_latitude  = json.drone_1_latitude;//set the coordinates
+            drone_1_longitude = json.drone_1_longitude;//set the coordinates of the drone
+        }
+    }
+
+
+
+
+</script>

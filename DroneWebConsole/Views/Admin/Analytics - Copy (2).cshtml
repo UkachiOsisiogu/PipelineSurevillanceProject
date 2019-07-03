@@ -1,0 +1,572 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<script src="~/libs/highcharts/highcharts.js"></script>
+<link href="~/libs/highcharts/highcharts.css" rel="stylesheet" />
+<script src="~/libs/highcharts/highcharts-more.js"></script>
+
+<script src="~/assets/js/mqttws31.min.js"></script>
+<script src="~/assets/js/webio_mqtt.js"></script>
+
+<div class="container" id="app">
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="graph_box">
+                <div class="row">
+                    <div class="col-md-2">
+                        <h4>
+                            Site 1:<br />
+                            @(defuzzify.s1Result())
+                        </h4>
+                        <h6>
+                            Location: -17.3200 40.9325
+                        </h6>
+                    </div>
+
+                    <div class="col-md-10">
+                        <div id="sensor_1_pressure"></div>
+                    </div>
+
+                   
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <br />
+    <br />
+    <br />
+    @*<div class="row">
+        <div class="col-md-12">
+
+            <div class="graph_box">
+                <div class="row">
+                    <div class="col-md-2">
+                        <h4>
+                            Site 2:<br />
+                            @(defuzzify.s2Result())
+                        </h4>
+                        <h6>
+                            Location: -17.3200 40.9325
+                        </h6>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div id="sensor_2_pressure"></div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div id="sensor_2_seismic"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <br />
+    <br />
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="graph_box">
+                <div class="row">
+                    <div class="col-md-2">
+                        <h4>
+                            Site 3:<br />
+                            @(defuzzify.s3Result())
+                        </h4>
+                        <h6>
+                            Location: -17.3200 40.9325
+                        </h6>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div id="sensor_3_pressure"></div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div id="sensor_3_seismic"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>*@
+
+</div>
+
+
+
+<!--temp-->
+<script>
+    Highcharts.chart('sensor_1_pressure', {
+    chart: {
+        type: 'spline',
+        animation: Highcharts.svg, // don't animate in old IE
+        marginRight: 10,
+        events: {
+            load: function () {
+
+                // set up the updating of the chart each second
+                var series = this.series[0];
+                setInterval(function () {
+                    var x = (new Date()).getTime(), // current time
+                        y = Math.random();
+                    series.addPoint([x, y], true, true);
+                }, 1000);
+            }
+        }
+    },
+
+    time: {
+        useUTC: false
+    },
+
+    title: {
+        text: 'Live Pressure Data'
+    },
+    xAxis: {
+        type: 'datetime',
+        tickPixelInterval: 150
+    },
+    yAxis: {
+        title: {
+            text: 'Value'
+        },
+        plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
+        }]
+    },
+    tooltip: {
+        headerFormat: '<b>{series.name}</b><br/>',
+        pointFormat: '{point.x:%Y-%m-%d %H:%M:%S}<br/>{point.y:.2f}'
+    },
+    legend: {
+        enabled: false
+    },
+    exporting: {
+        enabled: false
+    },
+    series: [{
+        name: 'Pressure reading',
+        data: (function () {
+            // generate an array of random data
+            var data = [],
+                time = (new Date()).getTime(),
+                i;
+
+            for (i = -19; i <= 0; i += 1) {
+                data.push({
+                    x: time + i * 1000,
+                    y: Math.random()
+                });
+            }
+            return data;
+        }())
+    }]
+});
+</script>
+@*
+<script>
+    Highcharts.chart('sensor_2_pressure', {
+        chart: {
+            type: 'spline',
+            scrollablePlotArea: {
+                minWidth: 600,
+                scrollPositionX: 1
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        title: {
+            text: 'Pressure sensor 2',
+            align: 'left'
+        },
+
+        xAxis: {
+            type: 'datetime',
+            labels: {
+                overflow: 'justify'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'pressure (psi)'
+            },
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{
+                from: 0.0,
+                to: 5.0,
+                color: 'rgba(68, 170, 213, 0.1)',
+                label: {
+                    text: 'Low Pressure',
+                    style: {
+                        color: '#F00'
+                    }
+                }
+            }, {
+                from: 6.0,
+                to: 8.0,
+                color: 'rgba(0, 0, 0, 0)',
+                label: {
+                    text: 'Normal Pressure',
+                    style: {
+                        color: '#00F'
+                    }
+                }
+            }, {
+                from: 9.0,
+                to: 15.0,
+                color: 'rgba(68, 170, 213, 0.1)',
+                label: {
+                    text: 'High Pressure',
+                    style: {
+                        color: '#000'
+                    }
+                }
+            }]
+        },
+        tooltip: {
+            valueSuffix: ' m/s'
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 4,
+                states: {
+                    hover: {
+                        lineWidth: 5
+                    }
+                },
+                marker: {
+                    enabled: false
+                },
+                pointInterval: 3600000, // one hour
+                pointStart: Date.UTC(2018, 1, 13, 0, 0, 0)
+            }
+        },
+        series: [{
+            name: '',
+            data: [
+                @(defuzzify.LoadSensorGraphData("ss1", 1, 4))
+            ]
+
+        },],
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+</script>
+
+<script>
+    Highcharts.chart('sensor_3_pressure', {
+        chart: {
+            type: 'spline',
+            scrollablePlotArea: {
+                minWidth: 600,
+                scrollPositionX: 1
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        title: {
+            text: 'Pressure sensor 3',
+            align: 'left'
+        },
+
+        xAxis: {
+            type: 'datetime',
+            labels: {
+                overflow: 'justify'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'pressure (psi)'
+            },
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{
+                from: 0.0,
+                to: 5.0,
+                color: 'rgba(68, 170, 213, 0.1)',
+                label: {
+                    text: 'Low Pressure',
+                    style: {
+                        color: '#F00'
+                    }
+                }
+            }, {
+                from: 6.0,
+                to: 8.0,
+                color: 'rgba(0, 0, 0, 0)',
+                label: {
+                    text: 'Normal Pressure',
+                    style: {
+                        color: '#00F'
+                    }
+                }
+            }, {
+                from: 9.0,
+                to: 15.0,
+                color: 'rgba(68, 170, 213, 0.1)',
+                label: {
+                    text: 'High Pressure',
+                    style: {
+                        color: '#000'
+                    }
+                }
+            }]
+        },
+        tooltip: {
+            valueSuffix: ' m/s'
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 4,
+                states: {
+                    hover: {
+                        lineWidth: 5
+                    }
+                },
+                marker: {
+                    enabled: false
+                },
+                pointInterval: 3600000, // one hour
+                pointStart: Date.UTC(2018, 1, 13, 0, 0, 0)
+            }
+        },
+        series: [{
+            name: '',
+            data: [
+                3.7, 3.3, 3.9, 5.1, 3.5, 3.8, 4.0, 5.0, 6.1, 3.7, 3.3, 6.4,
+                6.9, 6.0, 6.8, 4.4, 4.0, 3.8, 5.0, 4.9, 9.2, 9.6, 9.5, 6.3,
+                9.5, 10.8, 14.0, 11.5, 10.0, 10.2, 10.3, 9.4, 8.9, 10.6, 10.5, 11.1,
+                10.4, 10.7, 11.3, 10.2, 9.6, 10.2, 11.1, 10.8, 13.0, 12.5, 12.5, 11.3,
+                10.1
+            ]
+
+        },],
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+</script>
+
+
+<!--seismic-->
+
+<script>
+    function getData(n) {
+        var arr = [],
+            i,
+            x,
+            a,
+            b,
+            c,
+            spike;
+        for (
+            i = 0, x = Date.UTC(new Date().getUTCFullYear(), 0, 1) - n * 36e5;
+            i < n;
+            i = i + 1, x = x + 36e5
+        ) {
+            if (i % 100 === 0) {
+                a = 2 * Math.random();
+            }
+            if (i % 1000 === 0) {
+                b = 2 * Math.random();
+            }
+            if (i % 10000 === 0) {
+                c = 2 * Math.random();
+            }
+            if (i % 50000 === 0) {
+                spike = 10;
+            } else {
+                spike = 0;
+            }
+            arr.push([
+                x,
+                2 * Math.sin(i / 100) + a + b + c + spike + Math.random()
+            ]);
+        }
+        return arr;
+    }
+    var n = 5000,
+        data = getData(n);
+
+
+    Highcharts.chart('sensor_1_seismic', {
+
+        chart: {
+            zoomType: 'x'
+        },
+        credits: {
+            enabled: false
+        },
+
+        title: {
+            text: 'Seismic sensor 1'
+        },
+
+        tooltip: {
+            valueDecimals: 2
+        },
+
+        xAxis: {
+            type: 'datetime'
+        },
+
+        series: [{
+            data: data,
+            lineWidth: 0.5,
+            name: 'per second data points'
+        }]
+
+    });
+</script>
+
+
+<script>
+    Highcharts.chart('sensor_2_seismic', {
+
+        chart: {
+            zoomType: 'x'
+        },
+        credits: {
+            enabled: false
+        },
+
+        title: {
+            text: 'Seismic sensor 2'
+        },
+
+        tooltip: {
+            valueDecimals: 2
+        },
+
+        xAxis: {
+            type: 'datetime'
+        },
+
+        series: [{
+            data: data,
+            lineWidth: 0.5,
+            name: 'per second data points'
+        }]
+
+    });
+</script>
+
+<script>
+    Highcharts.chart('sensor_3_seismic', {
+
+        chart: {
+            zoomType: 'x'
+        },
+        credits: {
+            enabled: false
+        },
+
+        title: {
+            text: 'Seismic sensor 3'
+        },
+
+        tooltip: {
+            valueDecimals: 2
+        },
+
+        xAxis: {
+            type: 'datetime'
+        },
+
+        series: [{
+            data: data,
+            lineWidth: 0.5,
+            name: 'per second data points'
+        }]
+
+    });
+</script>
+    
+@(defuzzify.LoadSensorGraphData("ss0", 1, 4))
+
+*@
+
+
+
+<script>
+    var vm_ = new Vue({
+        el: '#app',
+        data: {
+            commands: [],
+            autopilot: "off",
+            img_src: "/assets/img/img_camera.gif",
+
+        },//data
+        methods: {
+
+            //display the image snapped from the drone
+            display_drone_captured_image(img_url) {
+                this.img_src = img_url;
+            },
+            //only show the last four commands
+            //function will send commmands to the drone via the server
+            execCommand(cmd) {
+                var vm = this;
+                if (cmd === "snap_pic") {
+                    $("#imgwrap").loading({
+                        stoppable: true,
+                    });
+                }
+
+                if (vm.autopilot == "on") {
+                    $.notify("auto pilot is on");
+                    return;//dont exec commands as long as auto pilot is on
+                }
+                if (cmd == "chk") {
+                    cmd = $("#auto_pilot").val();
+                }
+                var sdrone = $("#sDrone").val();
+                $.ajax({
+                    url: "/Admin/execCommand",
+                    data: { drone: sdrone, command: cmd },
+                    type: "post",
+                    success: function (data) {
+                        $.notify(cmd, "success");
+                        vm.commands.unshift(data);
+                        if (vm.commands.length >= 7) vm.commands.pop();
+                    },
+                    error: function () {
+                        $.notify("Error occurred", "error");
+                    },
+                });
+            },//execCommand
+
+
+
+
+        },//methods
+
+    });
+</script>

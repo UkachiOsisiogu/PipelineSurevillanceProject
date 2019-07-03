@@ -1,0 +1,50 @@
+﻿divImageHolder {
+    list-style-type: none;
+    text-align: center;
+    margin:0;
+}
+
+divImageItem {
+    display: inline-block;
+    height: 250px;
+    margin: 0 1em 1em 0;
+    position: relative;
+    width: 250px;
+}
+
+span.text-content {
+    background: rgba(0,0,0,0.5);
+    color: white;
+    cursor: pointer;
+    display: table;
+    height: 250px;
+    position: absolute;
+    top: 0;
+    width: 250px;
+    opacity: 0;
+    -webkit-transition: opacity 500ms;
+    -moz-transition: opacity 500ms;
+    -o-transition: opacity 500ms;
+    transition: opacity 500ms;
+    border-radius: 5px;
+    margin-bottom: 40px !important;
+}
+
+span.text-content span {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+
+
+
+span.text-content:hover {
+    opacity: 1;
+}
+.divImageItem img {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 40px !important;
+}
